@@ -4,25 +4,28 @@ var http = require('http');
 
 function onRequest(request, response){
   response.writeHead(200, {'Access-Control-Allow-Origin':'http://localhost:8383', 'Content-Type':'text/json'});
-  
+  let counter = 0;
   let data='';
   request.on('data', chunk => {
     data += chunk;
+    counter++;
   })
   request.on('end', () => {
     let input = JSON.parse(data);
     let output ={};
-    
+    console.log(counter);
     mrowka = input.mrowka;
+    chunk = input.chunk;
     jedzonko = input.jedzonko;
     following = input.following;
     turnrandomly = input.turnrandomly;
     randomturnangle = input.randomturnangle;
     canvaswidth = parseInt(input.canvaswidth);
     canvasheight = parseInt(input.canvasheight);
+    
     mrowka.forEach(mroweczka => mroweczka = move(mroweczka));
 
-    output = {mrowka, jedzonko};
+    output = {mrowka, jedzonko, chunk};
 
     response.write(JSON.stringify(output));
     response.end();
@@ -30,13 +33,6 @@ function onRequest(request, response){
 }
 
 http.createServer(onRequest).listen(8000);
-
-
-
-
-
-
-
 
 var mrowka;
 var jedzonko;
@@ -155,14 +151,9 @@ function move(mrowka){
     mrowka.y = tempstat.y;
     mrowka.direction = tempstat.direction;
   } else {
-    mrowka.closestid = closestfood(mrowka.x, mrowka.y, mrowka.halfsize).id;
     let temp = jedzonko.findIndex(j => j.id == mrowka.closestid);
-
-
     jedzonko[temp].hp -=10;
     checkhp(jedzonko[temp]);
-
-
     mrowka.food += 1;
     if(mrowka.food == 2){
       mrowka.food = 0;
